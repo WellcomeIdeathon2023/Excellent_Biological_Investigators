@@ -74,7 +74,7 @@ def main():
     tokenizer, config, model = load_model()
 
     count = 0
-    for row in df_list:
+    for row in tqdm(df_list):
         # determine sentiment
         text = row[8]
         if isinstance(text, str):
