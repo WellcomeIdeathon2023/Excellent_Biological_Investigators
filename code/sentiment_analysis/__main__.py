@@ -25,6 +25,10 @@ def get_options():
                     type=int,
                     default=1,
                     help='Number of threads. Default = 1.')
+    IO.add_argument('--debug',
+                    action="store_true",
+                    default=False,
+                    help='Downsample to 100 tweets for debugging.')
     return parser.parse_args()
 
 def map_location_analysis(row):
@@ -62,7 +66,7 @@ def main():
     df = read_infile(infile)
     df_list = df.values.tolist()
 
-    df_list = df_list[0:100]
+    #df_list = df_list[0:100]
 
     print("Sentiment analysis...")
     count = 0
