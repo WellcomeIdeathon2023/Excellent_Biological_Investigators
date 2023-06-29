@@ -43,7 +43,7 @@ def map_location_analysis(row):
     date_time = datetime.strptime(date_time, '%d/%m/%Y %H:%M')
 
     # get location
-    location = ("NA", "NA")
+    location = ("NA", "NA", "NA")
     if user_location != "" and user_location != None:
         location = get_location(user_location)
     return date_time, location, followers, friends, favourites, verified, retweet
@@ -56,24 +56,25 @@ def main():
     debug = options.debug
 
     # infile = "../../data/vax_tweets.csv"
-    # outfile = "vax_tweets_parsed.csv"
+    # outfile = "vax_tweets_parsed"
     # debug = True
 
     df = read_infile(infile)
     df_list = df.values.tolist()
 
     if debug:
-        df_list = df_list[0:100]
+        df_list = df_list[0:20]
 
     # generate lists to hold output
     info_list = []
     sentiment_list = []
 
-    print("Running NLP analysis...")
+    print("Loading Sentiment NLP model...")
     # generate model
     tokenizer, config, model = load_model()
 
     #count = 0
+    print("Running NLP analysis...")
     for row in tqdm(df_list):
         # determine sentiment
         text = row[8]
@@ -98,7 +99,7 @@ def main():
 
             date_time, location, followers, friends, favourites, verified, retweet = info_list[i]
 
-            o.write("{},{},{},{},{},{},{},{},{}\n".format(top_sentiment, top_score, date_time, location[0] + ":" + location[1],
+            o.write("{},{},{},{},{},{},{},{},{}\n".format(top_sentiment, top_score, date_time, location[0] + ":" + location[1] + ":" + location[2],
                                            int(followers), int(friends), int(favourites), verified, retweet))
 
 

@@ -4,6 +4,7 @@ from geograpy.extraction import Extractor
 
 def get_location(text):
     city = "NA"
+    region = "NA"
     country = "NA"
     e = Extractor(text=text)
     e.split()
@@ -22,12 +23,14 @@ def get_location(text):
     if combined_loc != None:
         if country != "NA":
             if country == combined_loc.country.name:
+                region = combined_loc.region.name
                 city = combined_loc.name
         else:
             country = combined_loc.country.name
+            region = combined_loc.region.name
             city = combined_loc.name
 
-    return country, city
+    return country, region, city
 
 def extract_clean_address(address, geolocator, geocode):
     try:
