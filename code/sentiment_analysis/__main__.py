@@ -73,8 +73,11 @@ def main():
     for row in df_list:
         # determine sentiment
         text = row[8]
-        text = preprocess(text)
-        sentiment_list.append(determine_sentiment(text, tokenizer, config, model))
+        if isinstance(text, str):
+            text = preprocess(text)
+            sentiment_list.append(determine_sentiment(text, tokenizer, config, model))
+        else:
+            sentiment_list.append(("NA", 0))
         if count % 1000 == 0:
             print("At index: {}".format(count))
 
