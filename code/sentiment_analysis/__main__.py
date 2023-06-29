@@ -4,6 +4,7 @@ from datetime import datetime
 from shared_memory import *
 from tqdm import *
 import argparse
+import pandas as pd
 
 # avoid tokeniser parrallelism
 import os
@@ -18,6 +19,9 @@ def get_options():
     IO.add_argument('--infile',
                     required=True,
                     help='Infile of tweets to process.')
+    IO.add_argument('--sentiment',
+                    default=None,
+                    help='Infile pre-processed tweet sentiment.')
     IO.add_argument('--outfile',
                     required=True,
                     help='Outfile prefix to save as .csv.')
@@ -55,42 +59,53 @@ def main():
     infile = options.infile
     outfile = options.outfile
     threads = options.threads
+    sentinent_file = options.sentiment
+    debug = options.debug
 
-    # generate model
-    tokenizer, config, model = load_model()
+    df = read_infile(infile)
+    df_list = df.values.tolist()
+
+    if debug:
+        df_list = df_list[0:100]
 
     # generate lists to hold output
     info_list = []
     sentiment_list = []
 
-    df = read_infile(infile)
-    df_list = df.values.tolist()
+    if sentinent_file == None:
+        # generate model
+        tokenizer, config, model = load_model()
 
-    #df_list = df_list[0:100]
+        print("Sentiment analysis...")
+        count = 0
+        for row in df_list:
+            # determine sentiment
+            text = row[8]
+            if isinstance(text, str):
+                text = preprocess(text)
+                sentiment_list.append(list(determine_sentiment(text, tokenizer, config, model)))
+            else:
+                sentiment_list.append(["NA", 0])
+            if count % 1000 == 0:
+                print("At index: {}".format(count))
 
-    print("Sentiment analysis...")
-    count = 0
-    for row in df_list:
-        # determine sentiment
-        text = row[8]
-        if isinstance(text, str):
-            text = preprocess(text)
-            sentiment_list.append(determine_sentiment(text, tokenizer, config, model))
-        else:
-            sentiment_list.append(("NA", 0))
-        if count % 1000 == 0:
-            print("At index: {}".format(count))
-
-        count += 1
+            count += 1
 
 
-    print("Writing sentiment output...")
-    with open(outfile + "_sentiment.csv", "w") as o:
-        o.write("Sentiment,Sentiment_score\n")
-        for i in range(len(sentiment_list)):
-            top_sentiment, top_score = sentiment_list[i]
+        print("Writing sentiment output...")
+        with open(outfile + "_sentiment.csv", "w") as o:
+            o.write("Sentiment,Sentiment_score\n")
+            for i in range(len(sentiment_list)):
+                entry = sentiment_list[i]
 
-            o.write("{},{}\n".format(top_sentiment, top_score))
+                top_sentiment = entry[0]
+                top_score = entry[1]
+
+                o.write("{},{}\n".format(top_sentiment, top_score))
+    else:
+        sentiment_df = pd.read_csv(sentinent_file, delimiter=",", header=0)
+
+        sentiment_list = sentiment_df.values.tolist()
 
     print("Geographic analysis...")
     with Pool(processes=threads) as pool:
@@ -103,7 +118,10 @@ def main():
     with open(outfile + ".csv", "w") as o:
         o.write("Sentiment,Sentiment_score,Date_time,Location,Num_followers,Num_friends,Num_favourites,User_verified,Retweet\n")
         for i in range(len(sentiment_list)):
-            top_sentiment, top_score = sentiment_list[i]
+            entry = sentiment_list[i]
+            top_sentiment = entry[0]
+            top_score = entry[1]
+
             date_time, location, followers, friends, favourites, verified, retweet = info_list[i]
 
 
