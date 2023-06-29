@@ -80,6 +80,15 @@ def main():
 
         count += 1
 
+
+    print("Writing sentiment output...")
+    with open(outfile + "_sentiment.csv", "w") as o:
+        o.write("Sentiment,Sentiment_score\n")
+        for i in range(len(sentiment_list)):
+            top_sentiment, top_score = sentiment_list[i]
+
+            o.write("{},{}\n".format(top_sentiment, top_score))
+
     print("Geographic analysis...")
     with Pool(processes=threads) as pool:
         with tqdm(total=len(df_list)) as pbar:
@@ -87,7 +96,7 @@ def main():
                 info_list.append(tweet_tup)
                 pbar.update()
 
-    print("Writing output...")
+    print("Writing whole output...")
     with open(outfile + ".csv", "w") as o:
         o.write("Sentiment,Sentiment_score,Date_time,Location,Num_followers,Num_friends,Num_favourites,User_verified,Retweet\n")
         for i in range(len(sentiment_list)):
