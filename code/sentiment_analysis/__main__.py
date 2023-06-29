@@ -5,7 +5,8 @@ from shared_memory import *
 from tqdm import *
 import argparse
 import pandas as pd
-import geograpy
+from geograpy.locator import Locator
+from geograpy.extraction import Extractor
 
 # avoid tokeniser parrallelism
 import os
@@ -20,16 +21,9 @@ def get_options():
     IO.add_argument('--infile',
                     required=True,
                     help='Infile of tweets to process.')
-    IO.add_argument('--sentiment',
-                    default=None,
-                    help='Infile pre-processed tweet sentiment.')
     IO.add_argument('--outfile',
                     required=True,
                     help='Outfile prefix to save as .csv.')
-    IO.add_argument('--threads',
-                    type=int,
-                    default=1,
-                    help='Number of threads. Default = 1.')
     IO.add_argument('--debug',
                     action="store_true",
                     default=False,
@@ -55,13 +49,15 @@ def map_location_analysis(row):
     return date_time, location, followers, friends, favourites, verified, retweet
 
 def main():
-    options = get_options()
+    #options = get_options()
 
-    infile = options.infile
-    outfile = options.outfile
-    threads = options.threads
-    sentinent_file = options.sentiment
-    debug = options.debug
+    # infile = options.infile
+    # outfile = options.outfile
+    # debug = options.debug
+
+    infile = "../../data/vax_tweets.csv"
+    outfile = "vax_tweets_parsed.csv"
+    debug = True
 
     df = read_infile(infile)
     df_list = df.values.tolist()
@@ -73,61 +69,34 @@ def main():
     info_list = []
     sentiment_list = []
 
-    if sentinent_file == None:
-        # generate model
-        tokenizer, config, model = load_model()
+    print("Running NLP analysis...")
+    # generate model
+    tokenizer, config, model = load_model()
 
-        print("Sentiment analysis...")
-        count = 0
-        for row in df_list:
-            # determine sentiment
-            text = row[8]
-            if isinstance(text, str):
-                text = preprocess(text)
-                sentiment_list.append(list(determine_sentiment(text, tokenizer, config, model)))
-            else:
-                sentiment_list.append(["NA", 0])
-            if count % 1000 == 0:
-                print("At index: {}".format(count))
+    count = 0
+    for row in df_list:
+        # determine sentiment
+        text = row[8]
+        if isinstance(text, str):
+            text = preprocess(text)
+            sentiment_list.append(determine_sentiment(text, tokenizer, config, model))
+        else:
+            sentiment_list.append(["NA", 0])
 
-            count += 1
+        info_list.append(map_location_analysis(row))
 
+        if count % 1000 == 0:
+            print("At index: {}".format(count))
 
-        print("Writing sentiment output...")
-        with open(outfile + "_sentiment.csv", "w") as o:
-            o.write("Sentiment,Sentiment_score\n")
-            for i in range(len(sentiment_list)):
-                entry = sentiment_list[i]
+        count += 1
 
-                top_sentiment = entry[0]
-                top_score = entry[1]
-
-                o.write("{},{}\n".format(top_sentiment, top_score))
-    else:
-        sentiment_df = pd.read_csv(sentinent_file, delimiter=",", header=0)
-
-        sentiment_list = sentiment_df.values.tolist()
-
-    print("Geographic analysis...")
-    # run dummy analysis without multithreading to download necessary database
-    geograpy_test = geograpy.get_geoPlace_context(text="UK")
-
-    with Pool(processes=threads) as pool:
-        with tqdm(total=len(df_list)) as pbar:
-            for tweet_tup in pool.map(map_location_analysis, df_list):
-                info_list.append(tweet_tup)
-                pbar.update()
-
-    print("Writing whole output...")
+    print("Writing output...")
     with open(outfile + ".csv", "w") as o:
         o.write("Sentiment,Sentiment_score,Date_time,Location,Num_followers,Num_friends,Num_favourites,User_verified,Retweet\n")
         for i in range(len(sentiment_list)):
-            entry = sentiment_list[i]
-            top_sentiment = entry[0]
-            top_score = entry[1]
+            top_sentiment, top_score = sentiment_list[i]
 
             date_time, location, followers, friends, favourites, verified, retweet = info_list[i]
-
 
             o.write("{},{},{},{},{},{},{},{},{}\n".format(top_sentiment, top_score, date_time, location[0] + ":" + location[1],
                                            int(followers), int(friends), int(favourites), verified, retweet))
