@@ -1,25 +1,34 @@
 from parse_data import read_infile
 from sentiment_analysis import *
-from datetime import datetime
 
 def main():
     infile = "../../data/vax_tweets.csv"
+    outfile = "vax_tweets_parsed.csv"
+
     # generate model
     tokenizer, config, model = load_model()
 
+    #sentiment_list = []
 
-    for entry in read_infile(infile):
-        # get sentiment
-        text = entry['text']
-        top_sentiment, top_score = determine_sentiment(text, tokenizer, config, model)
+    count = 0
+    with open(outfile, "w") as o:
+        o.write("Sentiment,Sentiment_score,Date_time,Location\n")
+        for text, date_time, location in read_infile(infile):
+            top_sentiment, top_score = determine_sentiment(text, tokenizer, config, model)
 
-        #get date
-        date_time_standard = datetime.strptime(entry['date'], '%d/%m/%Y %H:%M')
+            o.write("{},{},{},{}\n".format(top_sentiment, top_score, date_time, location[0] + ", " + location[1]))
 
-        # get location
-        location = entry['user_location']
+            #sentiment_list.append((top_sentiment, top_score, date_time, location))
 
-        test = 1
+            if count % 100 == 0:
+                print("At index: {}".format(count))
+            count += 1
+
+
+        # o.write("Sentiment,Sentiment_score,Date_time,Location\n")
+        # for entry in sentiment_list:
+        #     top_sentiment, top_score, date_time, location = entry
+        #     o.write("{},{},{},{}\n".format(top_sentiment, top_score, date_time, location))
 
 
 if __name__ == "__main__":

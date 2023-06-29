@@ -22,7 +22,6 @@ def load_model():
     return tokenizer, config, model
 
 def determine_sentiment(text, tokenizer, config, model):
-    text = preprocess(text)
     encoded_input = tokenizer(text, return_tensors='pt')
     output = model(**encoded_input)
     scores = output[0][0].detach().numpy()
