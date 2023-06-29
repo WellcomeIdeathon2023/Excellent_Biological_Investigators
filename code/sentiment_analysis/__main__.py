@@ -10,6 +10,9 @@ def main():
 
     #sentiment_list = []
 
+    #df = read_infile(infile)
+
+
     count = 0
     with open(outfile, "w") as o:
         o.write("Sentiment,Sentiment_score,Date_time,Location\n")
@@ -20,8 +23,9 @@ def main():
 
             #sentiment_list.append((top_sentiment, top_score, date_time, location))
 
-            if count % 100 == 0:
-                print("At index: {}".format(count))
+            #if count % 100 == 0:
+                #print("At index: {}".format(count))
+            print(count)
             count += 1
 
 

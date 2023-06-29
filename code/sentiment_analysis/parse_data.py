@@ -1,11 +1,35 @@
 import pandas as pd
 from datetime import datetime
 from sentiment_analysis import preprocess
-import geograpy
+from geograpy.locator import Locator
+from geograpy.extraction import Extractor
 
 def get_location(text):
-    places = geograpy.get_place_context(text=text)
-    return places
+    city = "NA"
+    country = "NA"
+    e = Extractor(text=text)
+    e.split()
+    loc = Locator.getInstance()
+    places = loc.normalizePlaces(e.places)
+
+    for location in places:
+        parse_country = loc.getCountry(location)
+        if parse_country != None:
+            country = parse_country.name
+            break
+
+    combined_loc = loc.locateCity(places)
+
+    # ensure countries match
+    if combined_loc != None:
+        if country != "NA":
+            if country == combined_loc.country.name:
+                city = combined_loc.name
+        else:
+            country = combined_loc.country.name
+            city = combined_loc.name
+
+    return country, city
 
 def extract_clean_address(address, geolocator, geocode):
     try:
@@ -21,13 +45,6 @@ def read_infile(infile):
 
     df = df.where(pd.notnull(df), None)
 
-    #geocode = RateLimiter(geolocator.geocode, min_delay_seconds=0.5, max_retries=10)
-    # df['parsed_location'] = df['user_location'].apply(geocode)
-    # df['point'] = df['parsed_location'].apply(lambda loc: tuple(loc.point) if loc else None)
-
-    #df.to_csv("vax_tweets_location.csv", index=False)
-
-    #unique_addresses = pd.unique(df['user_location'])
 
     for index, row in df.iterrows():
         text = preprocess(row['text'])
@@ -36,26 +53,6 @@ def read_infile(infile):
         messy_address = row['user_location']
         location = ("NA", "NA")
         if messy_address != "" and messy_address != None:
-            parsed_location = get_location(row['user_location'])
-            # get first inferred country and city
-            if len(parsed_location.countries) > 0:
-                country = parsed_location.countries[0]
-                city = "NA"
-                if country in parsed_location.country_cities:
-                    city = parsed_location.country_cities[parsed_location.countries[0]][0]
-                location = (country, city)
-
-
-        #lat, long, point = row['point']
-
-        #location = get_country(lat, long)
-
-        # parse address
-
-        #location = extract_clean_address(messy_address, geolocator, geocode)
-        # if isinstance(messy_address, str):
-        #     location = extract_clean_address(messy_address, geolocator, geocode)
-        # else:
-        #     location = None
+            location = get_location(row['user_location'])
 
         yield text, date_time, location
