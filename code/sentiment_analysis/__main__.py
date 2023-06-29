@@ -73,7 +73,7 @@ def main():
     # generate model
     tokenizer, config, model = load_model()
 
-    count = 0
+    #count = 0
     for row in tqdm(df_list):
         # determine sentiment
         text = row[8]
@@ -85,10 +85,10 @@ def main():
 
         info_list.append(map_location_analysis(row))
 
-        if count % 1000 == 0:
-            print("At index: {}".format(count))
+        # if count % 1000 == 0:
+        #     print("At index: {}".format(count))
 
-        count += 1
+        #count += 1
 
     print("Writing output...")
     with open(outfile + ".csv", "w") as o:
