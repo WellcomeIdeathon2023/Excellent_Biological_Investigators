@@ -1,14 +1,31 @@
 from parse_data import read_infile, get_location
 from sentiment_analysis import *
 from datetime import datetime
-from multiprocessing import Pool
-from functools import partial
 from shared_memory import *
 from tqdm import *
+import argparse
 
 # avoid tokeniser parrallelism
 import os
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
+
+def get_options():
+    description = "Run sentiment analysis on twitter data."
+    parser = argparse.ArgumentParser(description=description,
+                                     prog='python __main__.py')
+
+    IO = parser.add_argument_group('Input/options.out')
+    IO.add_argument('--infile',
+                    required=True,
+                    help='Infile of tweets to process.')
+    IO.add_argument('--outfile',
+                    required=True,
+                    help='Outfile prefix to save as .csv.')
+    IO.add_argument('--threads',
+                    type=int,
+                    default=1,
+                    help='Number of threads. Default = 1.')
+    return parser.parse_args()
 
 def map_location_analysis(row):
     user_location = row[1]
@@ -29,16 +46,17 @@ def map_location_analysis(row):
     return date_time, location, followers, friends, favourites, verified, retweet
 
 def main():
-    infile = "../../data/vax_tweets.csv"
-    outfile = "vax_tweets_parsed.csv"
+    options = get_options()
 
-    threads = 4
+    infile = options.infile
+    outfile = options.outfile
+    threads = options.threads
 
     # generate model
     tokenizer, config, model = load_model()
 
+    # generate lists to hold output
     info_list = []
-
     sentiment_list = []
 
     df = read_infile(infile)
@@ -66,7 +84,7 @@ def main():
                 pbar.update()
 
     print("Writing output...")
-    with open(outfile, "w") as o:
+    with open(outfile + ".csv", "w") as o:
         o.write("Sentiment,Sentiment_score,Date_time,Location,Num_followers,Num_friends,Num_favourites,User_verified,Retweet\n")
         for i in range(len(sentiment_list)):
             top_sentiment, top_score = sentiment_list[i]
