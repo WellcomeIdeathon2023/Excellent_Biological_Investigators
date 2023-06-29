@@ -5,6 +5,7 @@ from shared_memory import *
 from tqdm import *
 import argparse
 import pandas as pd
+import geograpy
 
 # avoid tokeniser parrallelism
 import os
@@ -108,6 +109,9 @@ def main():
         sentiment_list = sentiment_df.values.tolist()
 
     print("Geographic analysis...")
+    # run dummy analysis without multithreading to download necessary database
+    geograpy_test = geograpy.get_geoPlace_context(text="UK")
+
     with Pool(processes=threads) as pool:
         with tqdm(total=len(df_list)) as pbar:
             for tweet_tup in pool.map(map_location_analysis, df_list):
