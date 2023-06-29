@@ -49,15 +49,15 @@ def map_location_analysis(row):
     return date_time, location, followers, friends, favourites, verified, retweet
 
 def main():
-    options = get_options()
+    # options = get_options()
+    #
+    # infile = options.infile
+    # outfile = options.outfile
+    # debug = options.debug
 
-    infile = options.infile
-    outfile = options.outfile
-    debug = options.debug
-
-    # infile = "../../data/vax_tweets.csv"
-    # outfile = "vax_tweets_parsed"
-    # debug = True
+    infile = "../../data/vax_tweets.csv"
+    outfile = "vax_tweets_parsed"
+    debug = True
 
     df = read_infile(infile)
     df_list = df.values.tolist()
@@ -76,6 +76,16 @@ def main():
     #count = 0
     print("Running NLP analysis...")
     for row in tqdm(df_list):
+        date_time = row[7]
+
+        # catch incorrect formatting
+        try:
+            date_time = datetime.strptime(date_time, '%d/%m/%Y %H:%M')
+        except ValueError:
+            continue
+
+        info_list.append(map_location_analysis(row))
+
         # determine sentiment
         text = row[8]
         if isinstance(text, str):
@@ -84,12 +94,6 @@ def main():
         else:
             sentiment_list.append(["NA", 0])
 
-        info_list.append(map_location_analysis(row))
-
-        # if count % 1000 == 0:
-        #     print("At index: {}".format(count))
-
-        #count += 1
 
     print("Writing output...")
     with open(outfile + ".csv", "w") as o:
