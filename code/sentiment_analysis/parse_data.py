@@ -1,6 +1,4 @@
 import pandas as pd
-from datetime import datetime
-from sentiment_analysis import preprocess
 from geograpy.locator import Locator
 from geograpy.extraction import Extractor
 
@@ -45,14 +43,6 @@ def read_infile(infile):
 
     df = df.where(pd.notnull(df), None)
 
+    return df
 
-    for index, row in df.iterrows():
-        text = preprocess(row['text'])
-        date_time = datetime.strptime(row['date'], '%d/%m/%Y %H:%M')
 
-        messy_address = row['user_location']
-        location = ("NA", "NA")
-        if messy_address != "" and messy_address != None:
-            location = get_location(row['user_location'])
-
-        yield text, date_time, location
