@@ -49,15 +49,15 @@ def map_location_analysis(row):
     return date_time, location, followers, friends, favourites, verified, retweet
 
 def main():
-    #options = get_options()
+    options = get_options()
 
-    # infile = options.infile
-    # outfile = options.outfile
-    # debug = options.debug
+    infile = options.infile
+    outfile = options.outfile
+    debug = options.debug
 
-    infile = "../../data/vax_tweets.csv"
-    outfile = "vax_tweets_parsed.csv"
-    debug = True
+    # infile = "../../data/vax_tweets.csv"
+    # outfile = "vax_tweets_parsed.csv"
+    # debug = True
 
     df = read_infile(infile)
     df_list = df.values.tolist()
