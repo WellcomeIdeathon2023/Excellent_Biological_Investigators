@@ -83,6 +83,8 @@ def main():
             date_time = datetime.strptime(date_time, '%d/%m/%Y %H:%M')
         except ValueError:
             continue
+        except TypeError:
+            continue
 
         info_list.append(map_location_analysis(row))
 
