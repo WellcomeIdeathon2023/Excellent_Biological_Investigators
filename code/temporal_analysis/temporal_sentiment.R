@@ -61,10 +61,23 @@ analyse_sentiment <- function(datafile, country.choice, ndays, num.bootstraps, o
   # save csv
   write.csv(subset.df, paste(outpref, "_time_series.csv", sep = ""), row.names = FALSE)
   
+
+  rolling.bs.avg <- rep(NA, length(all_dates))
+  rolling.bs.se <- rep(NA, length(all_dates))
+  
+  cols <- ndays:length(all_dates)
+  for(i in cols) {
+    obs.mat <- bootstrap.df[(i-(ndays-1)):(i),]
+    rolling.bs.avg[i] <- mean(obs.mat)
+    rolling.bs.se[i] <- sd(obs.mat) / sqrt(length(obs.mat))
+  }
+  
   subset.df <- transform(subset.df, avg.neg = rollmeanr(Negative, ndays, fill = NA))
   subset.df <- transform(subset.df, avg.neg.prop = rollmeanr(Prop.negative, ndays, fill = NA))
-  subset.df <- transform(subset.df, avg.neg.bs = rollmeanr(boostrap.avg, ndays, fill = NA))
-  subset.df <- transform(subset.df, avg.neg.bs.se = rollmeanr(boostrap.se, ndays, fill = NA))
+  subset.df$avg.neg.bs <- rolling.bs.avg
+  subset.df$avg.neg.bs.se <- rolling.bs.se
+  #subset.df <- transform(subset.df, avg.neg.bs = rollmeanr(boostrap.avg, ndays, fill = NA))
+  #subset.df <- transform(subset.df, avg.neg.bs.se = rollmeanr(boostrap.se, ndays, fill = NA))
   
   p <- ggplot(subset.df, aes(x = Date, y = avg.neg)) + geom_ribbon(aes(ymin=avg.neg.bs-(1.96*avg.neg.bs.se), ymax=avg.neg.bs+(1.96*avg.neg.bs.se), fill = "#E74C3C")) + geom_path(linewidth=0.7) + theme_light() + theme(axis.text.x = element_text(size = 14), axis.text.y = element_text(size = 12), axis.title=element_text(size=16,face="bold"), strip.text.x = element_text(size = 11), legend.title=element_text(size=14,face="bold"), legend.text=element_text(size=12), legend.position = "none") + ylab(paste("No. Negative Tweets (", ndays, "-day rolling average)", sep = "")) + scale_fill_npg()
   p
