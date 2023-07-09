@@ -2,7 +2,7 @@
 
 If you use this code, please cite the following:
 
-###Cardiff Natural Language Processing Group tweeteval model:
+### Cardiff Natural Language Processing Group tweeteval model:
 
 ```
 @inproceedings{barbieri2020tweeteval,
@@ -13,7 +13,7 @@ If you use this code, please cite the following:
 }
 ```
 
-###Cardiff Natural Language Processing Group tweeteval sentiment dataset:
+### Cardiff Natural Language Processing Group tweeteval sentiment dataset:
 
 ```
 @inproceedings{rosenthal2017semeval,
@@ -25,7 +25,7 @@ If you use this code, please cite the following:
 }
 ```
 
-###Geograpy3 NLP
+### Geograpy3 NLP
 
 ```
 https://github.com/somnathrakshit/geograpy3
