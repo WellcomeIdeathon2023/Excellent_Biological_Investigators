@@ -79,9 +79,22 @@ analyse_sentiment <- function(datafile, country.choice, ndays, num.bootstraps, o
   #subset.df <- transform(subset.df, avg.neg.bs = rollmeanr(boostrap.avg, ndays, fill = NA))
   #subset.df <- transform(subset.df, avg.neg.bs.se = rollmeanr(boostrap.se, ndays, fill = NA))
   
+  mean.neg <- mean(subset.df$Negative)
+  sd.neg <- sd(subset.df$Negative)
+  sd.high <- mean.neg + sd.neg
+  sd.low <- max(c(0, mean.neg - sd.neg))
+  
   p <- ggplot(subset.df, aes(x = Date, y = avg.neg)) + geom_ribbon(aes(ymin=avg.neg.bs-(1.96*avg.neg.bs.se), ymax=avg.neg.bs+(1.96*avg.neg.bs.se), fill = "#E74C3C")) + geom_path(linewidth=0.7) + theme_light() + theme(axis.text.x = element_text(size = 14), axis.text.y = element_text(size = 12), axis.title=element_text(size=16,face="bold"), strip.text.x = element_text(size = 11), legend.title=element_text(size=14,face="bold"), legend.text=element_text(size=12), legend.position = "none") + ylab(paste("No. Negative Tweets (", ndays, "-day rolling average)", sep = "")) + scale_fill_npg()
   p
   ggsave(file=paste(outpref, "_rolling_average.svg", sep = ""), plot=p, height = 8, width = 15)
+  
+  p <- ggplot(subset.df, aes(x = Date, y = Negative)) + geom_hline(yintercept = mean.neg, colour="#27AE60", linewidth=0.8) + geom_ribbon(aes(ymin=sd.low, ymax=sd.high, alpha=0.1), fill = "#27AE60") + geom_path(linewidth=0.7) + theme_light() + theme(axis.text.x = element_text(size = 14), axis.text.y = element_text(size = 12), axis.title=element_text(size=16,face="bold"), strip.text.x = element_text(size = 11), legend.title=element_text(size=14,face="bold"), legend.text=element_text(size=12), legend.position = "none") + ylab(paste("No. Negative Tweets", sep = "")) + scale_fill_npg()
+  p
+  ggsave(file=paste(outpref, "_stddev.svg", sep = ""), plot=p, height = 8, width = 15)
+  
+  p <- ggplot(subset.df, aes(x = Date, y = avg.neg)) + geom_ribbon(aes(ymin=avg.neg.bs-(1.96*avg.neg.bs.se), ymax=avg.neg.bs+(1.96*avg.neg.bs.se), fill = "#E74C3C")) + geom_hline(yintercept = mean.neg, colour="#27AE60", linewidth=0.8) + geom_ribbon(aes(ymin=sd.low, ymax=sd.high, alpha=0.1), fill = "#27AE60") + geom_path(linewidth=0.7) + theme_light() + theme(axis.text.x = element_text(size = 14), axis.text.y = element_text(size = 12), axis.title=element_text(size=16,face="bold"), strip.text.x = element_text(size = 11), legend.title=element_text(size=14,face="bold"), legend.text=element_text(size=12), legend.position = "none") + ylab(paste("No. Negative Tweets (", ndays, "-day rolling average)", sep = "")) + scale_fill_npg()
+  p
+  ggsave(file=paste(outpref, "_rolling_average_stddev.svg", sep = ""), plot=p, height = 8, width = 15)
 }
 
 
