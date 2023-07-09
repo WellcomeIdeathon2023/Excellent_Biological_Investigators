@@ -13,7 +13,7 @@ If you use this code, please cite the following:
 }
 ```
 
-### Cardiff Natural Language Processing Group tweeteval sentiment dataset:
+### Tweeteval sentiment dataset:
 
 ```
 @inproceedings{rosenthal2017semeval,
