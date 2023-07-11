@@ -1,0 +1,9 @@
+baseURL = 'https://qtoussaint.github.io'
+languageCode = 'en-us'
+title = 'SentimentHub'
+theme = 'ananke'
+[params]
+  site_logo = '/images/logo_new_white.png'
+  background_color_class = 'bg-navy'
+  #paginate = 4
+  #mainSections = ['posts','aboutus']
